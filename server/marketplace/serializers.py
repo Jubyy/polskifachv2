@@ -1,5 +1,8 @@
 from rest_framework import serializers
-from .models import Category, ContractorProfile, Service, Listing, JobRequest, Conversation, Message, Review
+from .models import (
+    Category, ContractorProfile, Service, Listing, JobRequest,
+    Conversation, Message, Review, UserProfile, Report
+)
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -49,3 +52,14 @@ class ConversationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Conversation
         fields = ["id","contractor","client_email","client_name","created_at","messages"]
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ["role"]
+
+class ReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Report
+        fields = ["id","reporter","target_type","target_id","reason","status","created_at"]
+        read_only_fields = ["reporter","status","created_at"]

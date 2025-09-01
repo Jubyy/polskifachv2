@@ -1,6 +1,20 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+# ==== ROLE / PROFIL UŻYTKOWNIKA ====
+class UserProfile(models.Model):
+    class Role(models.TextChoices):
+        CLIENT = "CLIENT", "Client"
+        CONTRACTOR = "CONTRACTOR", "Contractor"
+        MODERATOR = "MODERATOR", "Moderator"
+        ADMIN = "ADMIN", "Admin"
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    role = models.CharField(max_length=16, choices=Role.choices, default=Role.CLIENT)
+
+    def __str__(self):
+        return f"{self.user.username} ({self.role})"
+
 class Category(models.Model):
     name = models.CharField(max_length=120, unique=True)
     slug = models.SlugField(max_length=140, unique=True)
@@ -65,3 +79,26 @@ class Review(models.Model):
     comment = models.TextField(blank=True)
     author_name = models.CharField(max_length=120)
     created_at = models.DateTimeField(auto_now_add=True)
+
+# ==== ZGŁOSZENIA / MODERACJA ====
+class Report(models.Model):
+    class TargetType(models.TextChoices):
+        LISTING = "LISTING", "Listing"
+        REVIEW = "REVIEW", "Review"
+        USER = "USER", "User"
+
+    class Status(models.TextChoices):
+        OPEN = "OPEN", "Open"
+        APPROVED = "APPROVED", "Approved"
+        REJECTED = "REJECTED", "Rejected"
+        REMOVED = "REMOVED", "Removed"
+
+    reporter = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="reports")
+    target_type = models.CharField(max_length=16, choices=TargetType.choices)
+    target_id = models.PositiveIntegerField()
+    reason = models.TextField()
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.OPEN)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Report {self.id} {self.target_type}#{self.target_id} [{self.status}]"
